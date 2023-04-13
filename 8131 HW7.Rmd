@@ -1,0 +1,55 @@
+---
+title: "8131 HW7"
+output: html_document
+date: "2023-04-08"
+---
+```{r}
+library(ggplot2)
+library(nlme)
+library(lme4)
+```
+
+```{r}
+# import data
+data = read.csv('/Users/yanfeng/Desktop/CU/研一下/P8131/HW7/HW7-politeness_data.csv')
+```
+
+# problem a
+```{r}
+ggplot(data, aes(x = frequency, group = attitude, fill = attitude)) + geom_boxplot() + facet_grid("gender")
+```
+
+# problem b
+```{r}
+# fit a random intercept model, no interactions
+LMM1.REML = lme(frequency ~ gender + attitude, random = ~ 1 | subject, data = data, method = 'REML')
+VarCorr(LMM1.REML) # covariance estimates for random effects and variance for residuals
+LMM1.REML$sigma # std for residuals
+vcov(LMM1.REML) # covariance for fixed effects estimates (inverse fisher info)
+#
+fixed.effects(LMM1.REML) # fixed effects coef
+random.effects(LMM1.REML) # ordered random effects, BLUPs
+data$frequency-fitted(LMM1.REML) # residuals
+```
+
+# problem c
+```{r}
+# fit a random intercept model, with interactions
+# because we are doing model comparisons using likelihood ratio test, 'ML' instead of 'REML'
+LMM2.ML = lme(frequency ~ gender + attitude + gender * attitude, random = ~ 1 | subject, data = data, method = "ML")
+LMM1.ML = lme(frequency ~ gender + attitude, random = ~ 1 | subject, data = data, method = "ML")
+anova(LMM1.ML, LMM2.ML) 
+```
+
+# problem d
+```{r}
+# fit a random intercept model for both subjects and scenarios
+LMM3 = lmer(frequency ~ gender + attitude + (1 | subject) + (1 | scenario), data = data)
+fixed.effects(LMM3)
+random.effects(LMM3)
+VarCorr(LMM3) 
+vcov(LMM3)
+```
+
+
+
